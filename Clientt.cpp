@@ -14,22 +14,24 @@ void receive_messages(SOCKET sock) {
             break;
         }
         buffer[result] = '\0';
-        std::cout << "Received message: " << buffer << std::endl;
+        std::cout << "" << buffer << std::endl;
     }
 }
 
-void send_messages(SOCKET sock) {
+void send_messages(SOCKET sock,std::string name) {
     std::string message;
+    std::string messagemod;
     while (true) {
         // Get message from user
-        std::cout << "Enter your message: ";
-        std::getline(std::cin, message);
-        if (message == "quit") {
+        std::getline(std::cin,message);
+        messagemod = "@" + name + ":" + message;
+        std::cout << messagemod<< std::endl;
+        if (messagemod == "quit") {
             break;
         }
 
         // Send message to server
-        int result = send(sock, message.c_str(), message.length(), 0);
+        int result = send(sock, messagemod.c_str(), messagemod.length(), 0);
         if (result == SOCKET_ERROR) {
             std::cerr << "send failed with error: " << WSAGetLastError() << std::endl;
             break;
@@ -38,6 +40,9 @@ void send_messages(SOCKET sock) {
 }
 
 int main() {
+	std::string name;
+	std::cout << "Enter your name: ";
+    std::getline(std::cin, name);
     // Initialize Winsock
     WSADATA wsaData;
     int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -69,7 +74,7 @@ int main() {
 
     // Start threads for receiving and sending messages
     std::thread receive_thread(receive_messages, sock);
-    std::thread send_thread(send_messages, sock);
+    std::thread send_thread(send_messages, sock,name);
 
     // Wait for threads to finish
     receive_thread.join();
